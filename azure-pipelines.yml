@@ -62,6 +62,19 @@ stages:
       displayName: 'Install deps'
       workingDirectory: backend
 
+    - script: |
+        set -e
+        pytest --junitxml=pytest-report.xml
+      displayName 'Run backend unit tests'
+      workingDirectory: backend
+
+    - task: PublishTestResults@2
+      displayName: 'Publish backend unit test results'
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFile: 'backend/pytest-report.xml'
+        failTaskOnFailedTests: true
+
     - task: ArchiveFiles@2
       displayName: 'Zip backend app'
       inputs:
