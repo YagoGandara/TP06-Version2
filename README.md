@@ -149,4 +149,4 @@ Se dejaron smoke tests listos, pero no se implementaron porque se daban de baja 
 - **Seed no se corria**: Se verificó que los Token fueran los correctos, y fue solucionado cuando se logró corregir el problema 2 
 
 
-Prueba de pipeline TP06
+Nueva Prueba de pipeline TP06
