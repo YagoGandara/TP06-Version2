@@ -80,7 +80,7 @@ stages:
 
     - script: |
         set -e
-        pytest --junitxml=pytest-report.xml
+        pytest --junitxml=TEST.xml
       displayName: 'Run backend unit tests'
       workingDirectory: backend
 
@@ -88,7 +88,7 @@ stages:
       displayName: 'Publish backend unit test results'
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFile: 'backend/pytest-report.xml'
+        testResultsFile: '**/TEST-*.xml'
         failTaskOnFailedTests: true
 
     - task: ArchiveFiles@2
