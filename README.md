@@ -1,4 +1,7 @@
-# TP05 - CI/CD (Angular + FastApi)
+# TP06 - TP05 + Pruebas Unitarias 
+
+
+#Parte de TP05
 
 App mínima para establecer **CI/CD** con Azure DevOps, y desplegarlo en **Azure App Service** en entorno de **QA** y **Producción**
 
@@ -149,4 +152,66 @@ Se dejaron smoke tests listos, pero no se implementaron porque se daban de baja 
 - **Seed no se corria**: Se verificó que los Token fueran los correctos, y fue solucionado cuando se logró corregir el problema 2 
 
 
-Nueva Prueba de pipeline TP06
+# Parte de TP06
+
+### Reglas de Negocio nuevas (backend)
+
+En el endpoint `POST /api/todos` del backend FastAPI se agregaron dos reglas de negocio:
+
+
+1. El título del TODO se trimea (`strip()`) y **no puede quedar vacío**.  
+   - Si el título es vacío o solo espacios, devuelve **400** con `{"detail": "title must not be empty"}`.
+2. El título debe ser **único, case-insensitive**.  
+   - Si ya existe otro TODO con el mismo título (ignorando mayúsculas/minúsculas), devuelve **400** con `{"detail": "title must be unique"}`.
+
+Estas reglas están implementadas en `backend/app/main.py` y cubiertas por tests unitarios.
+
+### Cómo correr los tests de backend (FastAPI)
+```bash
+cd backend
+
+python -m venv .venv
+.\.venv\Scripts\activate
+
+pip install -r requirements.txt
+
+pytest
+
+```
+Los test están en `backend/tests/test_todos_routes.py` y cubren
+* `/healthz`
+* `/api/todos` (listar y crear)
+* Reglas de negocio de título vacío y duplicado
+* `/admin/seed` con token inválido y válido (mockeado `seed_if_empty` para no pegar a la BD real)
+
+### Cómo correr los tests de frontend(Angular)
+
+```bash
+cd frontend 
+
+npm install
+
+npm test -- --watch=false --browsers=ChromeHeadless
+
+```
+
+Los test del frontend están en:
+* `frontend/src/app/api.service.spec.ts`
+    * use `windows.__env.apiBase` para armar las URLs
+    * llame a `GET /healthz` y `GET /api/todos`
+    * haga `POST /api/todos` con el body correcto `{ title }`
+    * usando `HttpClientTestingModule` y `HttpTestingController`
+
+* `frontend/src/app/app.component.spec.ts`
+    * Prueba la lógica del `AppComponent` sin tocar el template
+        * el constructor llama a `health()` y `listTodos()` y cargar el estado incial
+        * `add()` no llama al servicio si `newTitle` está vacío o son solo espacios
+        * `add()` hace `trim()` del título, llama al service y agrega el todo al array
+        * limpia `newTitle` y resetea `loading`
+
+## Integración en el Pipeline
+
+El archivo `azure-pipelines.yml` se actualizó par aque:
+1) El Job de frontend ejecute los test de Angular (solo si pasan se publica el artefacto)
+2) El Job de backend ejecute los test de FastAPI con pytest y genere un XML JUnit. Lis resultados se publican en Azure DevOps con `PublishTestResults@2` y si algun test falla, el job tambien
+3) Los stages de despliegue tienen el `dependsOn: Build` y `condition: succeded()` por lo que no se despliega nada si los test unitarios no pasan
