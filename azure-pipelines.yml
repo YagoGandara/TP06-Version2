@@ -65,7 +65,7 @@ stages:
     - script: |
         set -e
         pytest --junitxml=pytest-report.xml
-      displayName 'Run backend unit tests'
+      displayName: 'Run backend unit tests'
       workingDirectory: backend
 
     - task: PublishTestResults@2
