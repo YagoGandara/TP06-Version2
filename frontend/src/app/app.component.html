@@ -1,0 +1,19 @@
+<div class="container">
+  <h1>{{ title }}</h1>
+
+  <div class="card">
+    <strong>Health:</strong>
+    <span class="badge" *ngIf="health() as h">{{ h.status }} · {{ h.env }}</span>
+  </div>
+
+  <div class="card">
+    <h3>Todos</h3>
+    <div style="display:flex; gap:.5rem; margin:.5rem 0;">
+      <input [(ngModel)]="newTitle" placeholder="Nueva tarea..." />
+      <button (click)="add()" [disabled]="loading()">Agregar</button>
+    </div>
+    <ul>
+      <li *ngFor="let t of todos()">✔️ {{ t.title }}</li>
+    </ul>
+  </div>
+</div>

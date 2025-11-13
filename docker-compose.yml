@@ -1,0 +1,21 @@
+version: "3.9"
+services:
+  api:
+    build: ./backend
+    ports: ["8080:8080"]
+    env_file: [./environments/.env.local]
+  web:
+    build: ./frontend
+    ports: ["4200:4200"]
+    environment:
+      - API_BASE_URL=http://localhost:8080
+    depends_on: [api]
+
+  api-tests:
+    build: ./backend
+    working_dir: /app          # <- muy importante
+    command: sh -lc "python -m pytest -q tests"
+    environment:
+      - PYTHONPATH=/app        # <- por las dudas, fija el path del paquete
+    volumes:
+      - ./backend/tests:/app/tests
