@@ -153,7 +153,7 @@ def test_admin_seed_unauthorized():
 
 def test_admin_seed_ok(monkeypatch):
     """/admin/seed con token correcto debe llamar a seed_if_empty (mockeado)."""
-    from app import seed as seed_module
+    from app import main as main_module
 
     called = {}
 
@@ -162,7 +162,8 @@ def test_admin_seed_ok(monkeypatch):
         return {"inserted": 3, "skipped": False, "existing": 0}
 
     settings.SEED_TOKEN = "SECRET"
-    monkeypatch.setattr(seed_module, "seed_if_empty", fake_seed_if_empty)
+    # Importante: parcheamos el símbolo que usa run_seed
+    monkeypatch.setattr(main_module, "seed_if_empty", fake_seed_if_empty)
 
     with TestClient(app) as c:
         resp = c.post("/admin/seed", headers={"X-Seed-Token": "SECRET"})
@@ -172,4 +173,6 @@ def test_admin_seed_ok(monkeypatch):
 
     assert body["ok"] is True
     assert body["inserted"] == 3
+    # Verificamos que nuestro fake fue invocado
     assert called.get("ok") is True
+
