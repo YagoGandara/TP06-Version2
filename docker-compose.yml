@@ -13,9 +13,9 @@ services:
 
   api-tests:
     build: ./backend
-    working_dir: /app          # <- muy importante
+    working_dir: /app          
     command: sh -lc "python -m pytest -q tests"
     environment:
-      - PYTHONPATH=/app        # <- por las dudas, fija el path del paquete
+      - PYTHONPATH=/app        
     volumes:
       - ./backend/tests:/app/tests

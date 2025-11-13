@@ -30,12 +30,28 @@ stages:
     - task: NodeTool@0
       inputs: { versionSpec: '$(node_version)' }
 
+    #1) Instalar dependencias del front
     - script: |
         cd frontend
         npm ci --no-audit --no-fund || npm i --no-audit --no-fund --legacy-peer-deps
         npm run build -- --configuration=production
       displayName: 'npm ci & ng build (production)'
 
+    #2) Correr Tests unitarios de Angular
+    - script: |
+        set -e
+        cd frontend
+        npm test -- --watch=false --browsers=ChromeHeadless
+      displayName: 'Run frontend unit tests'
+
+    #3) Si pasan los test, buildear
+    - script: |
+        set -e
+        cd frontend
+        npm run build -- --configuration=production
+      displayName: 'ng build (production)'
+
+    #4) Empaquetar dist para deploy
     - script: |
         set -e
         cd frontend/dist/tp05-web
