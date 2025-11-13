@@ -37,6 +37,7 @@ if settings.SEED_ON_START.lower() == "true":
         # loggear si querés; no romper el start por un seed
         print(f"[WARN] seed_on_start failed: {e}")
 
+
 @app.post("/admin/seed")
 def run_seed(x_seed_token: str = Header(default="")):
     if not settings.SEED_TOKEN or x_seed_token != settings.SEED_TOKEN:
@@ -45,15 +46,18 @@ def run_seed(x_seed_token: str = Header(default="")):
         result = seed_if_empty(db)
     return {"ok": True, "env": settings.ENV, **result}
 
+
 @app.get("/")
 def root():
     return {"status": "ok", "message": "tp05-api running"}
+
 
 # --- Healthchecks robustos ---
 @app.get("/healthz")
 def healthz():
     # ping superficial: el proceso responde
     return {"status": "ok"}
+
 
 @app.get("/readyz")
 def readyz():
@@ -73,6 +77,8 @@ def readyz():
         info["error"] = e.__class__.__name__
         code = 503
     return JSONResponse(info, status_code=code)
+
+
 # --- Fin healthchecks ---
 
 # --- DEBUG ROUTES (temporales; quitarlas en PROD) ---
@@ -83,21 +89,39 @@ def debug():
         "db_file_exists": os.path.exists("/home/data/app.db"),
     }
 
+
 @app.get("/admin/touch")
 def touch():
     from .models import Todo
     with SessionLocal() as db:
         return {"count": db.query(Todo).count()}
+
+
 # --- FIN DEBUG ---
+
 
 @app.get("/api/todos", response_model=list[TodoOut])
 def list_todos(store: Store = Depends(get_store)):
     return store.list()
 
+
 @app.post("/api/todos", response_model=TodoOut, status_code=201)
 def create_todo(payload: TodoIn, store: Store = Depends(get_store)):
-    todo = store.add(title=payload.title, description=payload.description)
+    # Reglas de negocio:
+    # - El título no puede estar vacío (solo espacios).
+    # - El título debe ser único (case-insensitive).
+    title = payload.title.strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="title must not be empty")
+
+    # Regla de unicidad: no permitir dos títulos iguales (case-insensitive)
+    existing = [t for t in store.list() if t.title.lower() == title.lower()]
+    if existing:
+        raise HTTPException(status_code=400, detail="title must be unique")
+
+    todo = store.add(title=title, description=payload.description)
     return todo
+
 
 if __name__ == "__main__":
     import uvicorn
