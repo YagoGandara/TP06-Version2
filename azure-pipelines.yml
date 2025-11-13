@@ -80,7 +80,7 @@ stages:
 
     - script: |
         set -e
-        pytest --junitxml=TEST.xml
+        pytest --junitxml=TEST-backend.xml
       displayName: 'Run backend unit tests'
       workingDirectory: backend
 
@@ -88,7 +88,8 @@ stages:
       displayName: 'Publish backend unit test results'
       inputs:
         testResultsFormat: 'JUnit'
-        testResultsFile: '**/TEST-*.xml'
+        testResultsFiles: '$(System.DefaultWorkingDirectory)/backend/TEST-backend.xml'
+        searchFolder: '$(System.DefaultWorkingDirectory)'
         failTaskOnFailedTests: true
 
     - task: ArchiveFiles@2
