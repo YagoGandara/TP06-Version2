@@ -147,3 +147,6 @@ Se dejaron smoke tests listos, pero no se implementaron porque se daban de baja 
 - **Front devuelve 404**: Se verifico que el ZIP publicado tenga el `index.html` en la raíz `wwwroot`. En Kudu/SSH debería verse las cosas ubicandose en el directorio `site/wwwroot`
 - **`/api/todos` lanzaba 500**: en QA se corrigió asegurando que `DB_URL=sqlite:////home/data/app.db` y que la carpeta `/home/data` existieran (de no ser así, el código crea la ruta)
 - **Seed no se corria**: Se verificó que los Token fueran los correctos, y fue solucionado cuando se logró corregir el problema 2 
+
+
+Prueba de pipeline TP06
